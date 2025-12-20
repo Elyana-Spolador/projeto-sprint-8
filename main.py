@@ -1,13 +1,15 @@
 import data
 from helpers import is_url_reachable
+import helpers
+
 
 
 class TestUrbanRoutes:
 
 
     @classmethod
-    def setUpClass(cls):
-        if is_url_reachable(data.URBAN_ROUTES_URL):
+    def setup_class(cls):
+        if helpers.is_url_reachable(data.URBAN_ROUTES_URL):
             print("Conectado ao servidor Urban Routes.")
         else:
             print("Não foi possível conectar ao Urban Routes. Verifique se o servidor está ligado e ainda em execução")
