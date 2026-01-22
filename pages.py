@@ -1,17 +1,44 @@
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
-import time
 
-class UrbanRoutes:
+import helpers
+
+
+class UrbanRoutesPage:
     from_field = (By.ID, 'from')
     to_field = (By.ID, 'to')
-    call_taxi_button = (By.XPATH, '//button[contains(text(), "Chamar um táxi")]')
-
+    call_taxi_button = (By.XPATH, '//button[contains(text(), "Call a taxi")]')
+    supportive_plan_card = (By.XPATH, '//div[contains(@class, "tcard")]//div[contains(text(), "Comfort")]')
+    active_plan_card = (By.XPATH, '//div[@class="tcard active"]//div[@class="tcard-title"]')
+    phone_number_control = (By.XPATH,'//div[@class="np-button" or contains(@class, "np-button")][.//div[contains(text(), "Phone number")]]')
+    payment_method_select = (By.XPATH, '//div[contains(@class, "pp-button")]//div[contains(text(), "Payment method")]')
+    add_card_control = (By.XPATH, '//div[contains(@class, "pp-title") and contains(text(), "Add a card")]')
+    card_credentials_confirm_button = (By.XPATH, '//button[contains(text(), "Add")]')
+    phone_number_input = (By.ID, 'phone')
+    phone_number_next_button = (By.CSS_SELECTOR, '.full')
+    phone_number_code_input = (By.ID, 'code')
+    phone_number_confirm_button = (By.XPATH, '//button[contains(text(), "Confirm")]')
+    phone_number = (By.CLASS_NAME, 'np-text')
+    card_number_input = (By.ID, 'number')
+    card_code_input = (By.ID, 'code')
+    card_plc_image = (By.CLASS_NAME, 'plc')
+    close_button_payment_method = (By.XPATH, '//div[@class="payment-pickeropen"]//button[@class="close-button section-close"]')
+    current_payment_method = (By.CLASS_NAME, 'pp-value-text')
+    add_enumerable_option = (By.CLASS_NAME, 'counter-plus')
+    amount_of_enumerable_option = (By.CLASS_NAME, 'counter-value')
+    driver_wait_time = (By.CLASS_NAME, 'order-header-time')
+    order_driver_rating = (By.CLASS_NAME, 'order-btn-rating')
+    order_driver_image = (By.XPATH, '//div[@class="order-button"]//img')
+    order_driver_name = (By.XPATH, '//div[@class="order-btn-group"][1]/div[2]')
+    option_switches = (By.CLASS_NAME, 'switch')
+    option_switches_inputs = (By.CLASS_NAME, 'switch-input')
+    message_for_driver = (By.ID, 'comment')
+    reserve_button = (By.XPATH, '//button[contains(text(), "Reservar")]')
 
     def __init__(self, driver):
         self.driver = driver
-
 
     def set_from(self, from_address):
         self._wait_for_visible(self.from_field).send_keys(from_address)
@@ -34,9 +61,6 @@ class UrbanRoutes:
     def get_to(self):
         return self._wait_for(self.to_field).get_property('value')
 
-    def test_select_plan(self):
-        supportive_plan_card = (By.XPATH, '//div[contains(@class, "tcard")]//div[contains(text(), "Comfort")]')
-        active_plan_card = (By.XPATH, '//div[@class="tcard active"]//div[@class="tcard-title"]')
 
     def select_supportive_plan(self):
         card = self._wait_for_visible(self.supportive_plan_card)
@@ -47,44 +71,19 @@ class UrbanRoutes:
     def get_current_selected_plan(self):
         return self._wait_for(self.active_plan_card).text
 
-    def test_fill_phone_number(self):
-        phone_number_control = (By.XPATH, '//div[@class="np-button" or contains(@class, "np-button")]
-        [. // div[contains(text(), "Número de telefone")]]')
-        phone_number_input = (By.ID, 'phone')
-        phone_number_next_button = (By.CSS_SELECTOR, '.full')
-        phone_number_code_input = (By.ID, 'code')
-        phone_number_confirm_button = (By.XPATH, '//button[contains(text(), "Confirm")]')
-        phone_number = (By.CLASS_NAME, 'np-text')
-
     def set_phone(self, number):
         self._wait_for(self.phone_number_control).click()
-
         self._wait_for(self.phone_number_input).send_keys(number)
         self._wait_for(self.phone_number_next_button).click()
-        code = retrieve_phone_code(self.driver)
+        code = helpers.retrieve_phone_code(self.driver)
         self._wait_for(self.phone_number_code_input).send_keys(code)
         self._wait_for(self.phone_number_confirm_button).click()
 
     def get_phone(self):
         return self._wait_for(self.phone_number).text
 
-    def test_fill_card(self)
-
-        payment_method_select = (By.XPATH,
-        '//div[contains(@class, "pp-button")]//div[contains(text(), "Método
-        de pagamento")]')
-        add_card_control = (By.XPATH, '//div[contains(@class, "pp-title") and contains(text(), "Adicionar cartão")]')
-        card_number_input = (By.ID, 'number')
-        card_code_input = (By.ID, 'code')
-        card_plc_image = (By.CLASS_NAME, 'plc')
-        card_credentials_confirm_button = (By.XPATH, '//button[contains(text(), "Adicionar")]')
-        close_button_payment_method = (By.XPATH, '//div[@class="payment-picker
-        open"]//button[@class="close-button section-close"]')
-        current_payment_method = (By.CLASS_NAME, 'pp-value-text')
-
     def set_card(self, card_number, code):
         self.driver.find_element(*self.payment_method_select).click()
-
         self.driver.implicitly_wait(2)
         self.driver.find_element(*self.add_card_control).click()
         self.driver.find_element(*self.card_number_input).send_keys(card_number + Keys.TAB + code)
@@ -95,18 +94,12 @@ class UrbanRoutes:
     def get_current_payment_method(self):
         return self._wait_for(self.current_payment_method).text
 
-    def test_comment_for_driver(self):
-        message_for_driver = (By.ID, 'comment')
-
     def set_message_for_driver(self, message):
         self._wait_for(self.message_for_driver).send_keys(message)
 
     def get_message_for_driver(self):
         return self._wait_for(self.message_for_driver).get_property('value')
 
-    def test_order_blanket_and_handkerchiefs(self):
-        option_switches = (By.CLASS_NAME, 'switch')
-        option_switches_inputs = (By.CLASS_NAME, 'switch-input')
 
     def click_blanket_and_handkerchiefs_option(self):
         switches = WebDriverWait(self.driver, 5).until(expected_conditions.presence_of_all_elements_located(self.option_switches))
@@ -114,12 +107,7 @@ class UrbanRoutes:
 
     def get_blanket_and_handkerchiefs_option_checked(self):
         switches = WebDriverWait(self.driver, 5).until(expected_conditions.presence_of_all_elements_located(self.option_switches_inputs))
-
         return switches[0].get_property('checked')
-
-    def test_order_2_ice_creams(self):
-        add_enumerable_option = (By.CLASS_NAME, 'counter-plus')
-        amount_of_enumerable_option = (By.CLASS_NAME, 'counter-value')
 
     def add_ice_cream(self, amount: int):
         option_add_controls = WebDriverWait(self.driver, 5).until(
@@ -134,27 +122,17 @@ class UrbanRoutes:
         expected_conditions.presence_of_all_elements_located(
         self.amount_of_enumerable_option))[0].text)
 
-    def test_car_search_model_appears(self):
-        driver_wait_time = (By.CLASS_NAME, 'order-header-time')
-        order_driver_rating = (By.CLASS_NAME, 'order-btn-rating')
-        order_driver_image = (By.XPATH, '//div[@class="order-button"]//img')
-        order_driver_name = (By.XPATH, '//div[@class="order-btn-group"][1]/div[2]')
-
     def wait_driver_info(self):
         WebDriverWait(self.driver, 60).until(expected_conditions.invisibility_of_element_located(self.driver_wait_time))
-
         self._wait_for(self.order_driver_rating)
         self._wait_for(self.order_driver_image)
         self._wait_for(self.order_driver_name)
 
     def get_driver_info(self):
         rating = self._wait_for(self.order_driver_rating).text
-
         image = self._wait_for(self.order_driver_image).get_property('src')
         name = self._wait_for(self.order_driver_name).text
         return name, rating, image
-
-
 
     def _wait_for(self, locator, timeout=5):
         return WebDriverWait(self.driver, timeout).until(
@@ -163,4 +141,27 @@ class UrbanRoutes:
     def _wait_for_visible(self, locator, timeout=5):
         return WebDriverWait(self.driver, timeout).until(
         expected_conditions.visibility_of_element_located(locator))
+
+    def order_taxi(self):
+        self.click_reserve_button()
+        assert self.is_reserve_popup_open(), "O pop-up de reserva não abriu"
+        self.wait_driver_info()
+        assert self.is_driver_info_valid(), "As informações do motorista são inválidas"
+
+    def close_payment_method_form(self):
+        self._wait_for_visible(self.close_button_payment_method).click()
+
+    def click_reserve_button(self):
+        self._wait_for_visible(self.reserve_button).click()
+
+    def is_reserve_popup_open(self):
+        try:
+            self._wait_for_visible(self.driver_wait_time, timeout=5)
+            return True
+        except:
+            return False
+
+    def is_driver_info_valid(self):
+        name, rating, image = self.get_driver_info()
+        return all([name, rating, image])
 
